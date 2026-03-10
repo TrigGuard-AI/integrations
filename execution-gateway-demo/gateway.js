@@ -6,7 +6,7 @@
 const http = require('http');
 const path = require('path');
 const REPO_ROOT = path.resolve(__dirname, '../..');
-const { requireExecutionAuthorization } = require(path.join(REPO_ROOT, 'shared/utils/commitVerifier.js'));
+const { protectedExecute } = require(path.join(REPO_ROOT, 'shared/protectedExecution.js'));
 const { createExecutionReceipt } = require(path.join(REPO_ROOT, 'shared/utils/executionReceipt.js'));
 const crypto = require('crypto');
 
@@ -17,7 +17,7 @@ const COMMIT_TOKEN_SECRET = process.env.COMMIT_TOKEN_SECRET || '';
 function forwardToTarget(payload) {
   return new Promise((resolve, reject) => {
     const body = JSON.stringify(payload);
-    const u = new URL(TARGET_URL + '/commit');
+    const u = new URL(TARGET_URL + '/internal/commit');
     const req = http.request({
       hostname: u.hostname,
       port: u.port || 80,
@@ -74,21 +74,14 @@ const server = http.createServer(async (req, res) => {
 
   if (!commitToken || typeof commitToken !== 'string' || commitToken.trim() === '') {
     res.writeHead(403);
-    res.end(JSON.stringify({ ok: false, error: 'EXECUTION_DENIED', reason: 'missing or invalid token' }));
+    res.end(JSON.stringify({ ok: false, error: 'EXECUTION_DENIED' }));
     return;
   }
 
-  const requestPayload = {
-    tenantId: payload.tenantId,
-    surface: payload.surface || 'spendCommit',
-    signals: payload.signals || {},
-    context: payload.context || {},
-  };
-
   try {
-    const { claims } = await requireExecutionAuthorization({
-      token: commitToken,
-      requestPayload,
+    const { claims } = await protectedExecute({
+      payload,
+      commitToken,
       expectedSurface: 'spendCommit',
       expectedTenantId: payload.tenantId,
       secret: COMMIT_TOKEN_SECRET,

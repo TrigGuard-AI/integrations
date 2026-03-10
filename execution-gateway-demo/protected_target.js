@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
  * Protected target: simulates the irreversible action system.
- * ONLY accepts requests that come through the gateway (header x-trigguard-gateway: allowed).
- * Direct calls → 403 DIRECT_EXECUTION_FORBIDDEN.
+ * Only exposes POST /internal/commit. Only accepts requests with x-trigguard-gateway: allowed (from gateway).
+ * Direct calls → 403 { "error": "DIRECT_EXECUTION_FORBIDDEN" }.
  */
 const http = require('http');
 
@@ -11,7 +11,7 @@ const GATEWAY_HEADER = 'x-trigguard-gateway';
 
 const server = http.createServer((req, res) => {
   res.setHeader('Content-Type', 'application/json');
-  if (req.method !== 'POST' || (req.url && req.url.split('?')[0] !== '/commit')) {
+  if (req.method !== 'POST' || (req.url && req.url.split('?')[0] !== '/internal/commit')) {
     res.writeHead(404);
     res.end(JSON.stringify({ error: 'Not Found' }));
     return;
@@ -27,5 +27,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.error(`[protected_target] listening on ${PORT} (only accepts x-trigguard-gateway: allowed)`);
+  console.error(`[protected_target] listening on ${PORT} (POST /internal/commit only; x-trigguard-gateway: allowed required)`);
 });

@@ -33,9 +33,9 @@ trap cleanup EXIT
 sleep 2
 
 echo ""
-echo "[1] Direct bypass attempt"
+echo "[1] Direct execution attempt → BLOCKED"
 echo "    Calling protected target directly (no gateway header)..."
-RESP_DIRECT=$(curl -s -o /dev/null -w "%{http_code}" -X POST "http://localhost:$TARGET_PORT/commit" -H "Content-Type: application/json" -d '{}')
+RESP_DIRECT=$(curl -s -o /dev/null -w "%{http_code}" -X POST "http://localhost:$TARGET_PORT/internal/commit" -H "Content-Type: application/json" -d '{}')
 if [ "$RESP_DIRECT" = "403" ]; then
   echo "    Result: BLOCKED (403 DIRECT_EXECUTION_FORBIDDEN)"
 else
@@ -43,7 +43,7 @@ else
 fi
 echo ""
 
-echo "[2] High-risk action"
+echo "[2] High risk request → DENY → execution blocked"
 echo "    Evaluate high-risk request..."
 RESP_EVAL=$(curl -s -X POST "$EVAL_URL/v1/evaluate" -H "Content-Type: application/json" -d @"$HIGH")
 DECISION=$(echo "$RESP_EVAL" | jq -r '.decision // "ERROR"')
@@ -59,7 +59,7 @@ else
 fi
 echo ""
 
-echo "[3] Low-risk action"
+echo "[3] Low risk request → PERMIT → execution allowed"
 echo "    Evaluate low-risk request..."
 RESP_LOW=$(curl -s -X POST "$EVAL_URL/v1/evaluate" -H "Content-Type: application/json" -d @"$LOW")
 DECISION_LOW=$(echo "$RESP_LOW" | jq -r '.decision // "ERROR"')
