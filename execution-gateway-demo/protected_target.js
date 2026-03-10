@@ -1,13 +1,16 @@
 #!/usr/bin/env node
 /**
  * Protected target: simulates the irreversible action system.
- * Only exposes POST /internal/commit. Only accepts requests with x-trigguard-gateway: allowed (from gateway).
- * Direct calls → 403 { "error": "DIRECT_EXECUTION_FORBIDDEN" }.
+ * Only exposes POST /internal/commit. Verifies gateway identity via x-trigguard-gateway-signature (HMAC).
+ * Direct or spoofed calls → 403 UNAUTHORIZED_GATEWAY or DIRECT_EXECUTION_FORBIDDEN.
  */
 const http = require('http');
+const path = require('path');
+const REPO_ROOT = path.resolve(__dirname, '../..');
+const { verifyGatewayRequest } = require(path.join(REPO_ROOT, 'shared/utils/gatewaySignature.js'));
 
 const PORT = Number(process.env.TARGET_PORT) || 3001;
-const GATEWAY_HEADER = 'x-trigguard-gateway';
+const GATEWAY_SECRET = process.env.GATEWAY_SECRET || '';
 
 const server = http.createServer((req, res) => {
   res.setHeader('Content-Type', 'application/json');
@@ -16,16 +19,26 @@ const server = http.createServer((req, res) => {
     res.end(JSON.stringify({ error: 'Not Found' }));
     return;
   }
-  const allowed = req.headers[GATEWAY_HEADER];
-  if (allowed !== 'allowed') {
-    res.writeHead(403);
-    res.end(JSON.stringify({ error: 'DIRECT_EXECUTION_FORBIDDEN' }));
-    return;
-  }
-  res.writeHead(200);
-  res.end(JSON.stringify({ ok: true, message: 'Protected action executed' }));
+
+  let body = '';
+  req.on('data', (chunk) => { body += chunk; });
+  req.on('end', () => {
+    if (!GATEWAY_SECRET) {
+      res.writeHead(503);
+      res.end(JSON.stringify({ error: 'GATEWAY_SECRET not configured' }));
+      return;
+    }
+    const signature = req.headers['x-trigguard-gateway-signature'];
+    if (!signature || !verifyGatewayRequest(body, signature, GATEWAY_SECRET)) {
+      res.writeHead(403);
+      res.end(JSON.stringify({ error: 'UNAUTHORIZED_GATEWAY' }));
+      return;
+    }
+    res.writeHead(200);
+    res.end(JSON.stringify({ ok: true, message: 'Protected action executed' }));
+  });
 });
 
 server.listen(PORT, () => {
-  console.error(`[protected_target] listening on ${PORT} (POST /internal/commit only; x-trigguard-gateway: allowed required)`);
+  console.error(`[protected_target] listening on ${PORT} (POST /internal/commit only; gateway signature required)`);
 });

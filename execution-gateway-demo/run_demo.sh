@@ -18,6 +18,7 @@ fi
 # Start protected target and gateway in background
 export TARGET_PORT GATEWAY_PORT TARGET_URL="http://localhost:$TARGET_PORT"
 export COMMIT_TOKEN_SECRET="${COMMIT_TOKEN_SECRET:-dev-secret}"
+export GATEWAY_SECRET="${GATEWAY_SECRET:-dev-gateway-secret}"
 
 node "$SCRIPT_DIR/protected_target.js" &
 PID_TARGET=$!
