@@ -22,7 +22,7 @@ function forwardToTarget(payload) {
   return new Promise((resolve, reject) => {
     const body = JSON.stringify(payload);
     const method = 'POST';
-    const path = GATEWAY_PATH;
+    const gatewayPath = GATEWAY_PATH;
     const timestamp = Math.floor(Date.now() / 1000);
     const nonce = crypto.randomBytes(16).toString('hex');
     const headers = {
@@ -31,7 +31,7 @@ function forwardToTarget(payload) {
     };
     if (GATEWAY_SECRET) {
       headers['x-trigguard-gateway-signature'] = signGatewayRequest(
-        { method, path, body, timestamp, nonce },
+        { method, path: gatewayPath, body, timestamp, nonce },
         GATEWAY_SECRET
       );
       headers['x-trigguard-gateway-timestamp'] = String(timestamp);
