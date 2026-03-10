@@ -11,6 +11,8 @@ const { createExecutionReceipt } = require(path.join(REPO_ROOT, 'shared/utils/ex
 const { signGatewayRequest } = require(path.join(REPO_ROOT, 'shared/utils/gatewaySignature.js'));
 const crypto = require('crypto');
 
+const GATEWAY_PATH = '/internal/commit';
+
 const PORT = Number(process.env.GATEWAY_PORT) || 3002;
 const TARGET_URL = process.env.TARGET_URL || 'http://localhost:3001';
 const COMMIT_TOKEN_SECRET = process.env.COMMIT_TOKEN_SECRET || '';
@@ -19,14 +21,23 @@ const GATEWAY_SECRET = process.env.GATEWAY_SECRET || '';
 function forwardToTarget(payload) {
   return new Promise((resolve, reject) => {
     const body = JSON.stringify(payload);
+    const method = 'POST';
+    const path = GATEWAY_PATH;
+    const timestamp = Math.floor(Date.now() / 1000);
+    const nonce = crypto.randomBytes(16).toString('hex');
     const headers = {
       'Content-Type': 'application/json',
       'Content-Length': Buffer.byteLength(body),
     };
     if (GATEWAY_SECRET) {
-      headers['x-trigguard-gateway-signature'] = signGatewayRequest(body, GATEWAY_SECRET);
+      headers['x-trigguard-gateway-signature'] = signGatewayRequest(
+        { method, path, body, timestamp, nonce },
+        GATEWAY_SECRET
+      );
+      headers['x-trigguard-gateway-timestamp'] = String(timestamp);
+      headers['x-trigguard-gateway-nonce'] = nonce;
     }
-    const u = new URL(TARGET_URL + '/internal/commit');
+    const u = new URL(TARGET_URL + GATEWAY_PATH);
     const req = http.request({
       hostname: u.hostname,
       port: u.port || 80,
