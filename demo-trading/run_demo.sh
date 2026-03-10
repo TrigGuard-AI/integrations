@@ -14,7 +14,7 @@ if ! command -v jq &>/dev/null; then
 fi
 
 echo "=============================================="
-echo "Scenario 1: High-risk trade ($9,000,000)"
+echo "Scenario 1: High-risk trade (\$9,000,000)"
 echo "=============================================="
 RESP_HIGH=$(curl -s -X POST "$EVAL_URL/v1/evaluate" -H "Content-Type: application/json" -d @"$HIGH")
 DECISION_HIGH=$(echo "$RESP_HIGH" | jq -r '.decision // "ERROR"')
@@ -28,7 +28,7 @@ fi
 echo ""
 
 echo "=============================================="
-echo "Scenario 2: Low-risk trade ($500)"
+echo "Scenario 2: Low-risk trade (\$500)"
 echo "=============================================="
 RESP_LOW=$(curl -s -X POST "$EVAL_URL/v1/evaluate" -H "Content-Type: application/json" -d @"$LOW")
 DECISION_LOW=$(echo "$RESP_LOW" | jq -r '.decision // "ERROR"')
