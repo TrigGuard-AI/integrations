@@ -84,7 +84,7 @@ async function main() {
 
   const executionId = res.body?.executionId ?? '';
   const decision = res.body?.decision ?? 'PERMIT';
-  const policyVersion = res.body?.decisionHash ? '1' : '1';
+  const policyVersion = claims.policyVersion;
   const timestamp = new Date().toISOString();
 
   const receipt = createReceipt({
