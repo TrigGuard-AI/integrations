@@ -1,0 +1,46 @@
+# Example: GitHub Actions workflow with TrigGuard deploy authorization
+# Deploy runs only if TrigGuard returns PERMIT for surface deploy.release.
+#
+# Required:
+#   - vars.TRIGGUARD_URL (or hardcode your gateway URL)
+#   - secrets.TRIGGUARD_ENVELOPE (JSON envelope including commit token from your TrigGuard setup)
+#
+# See: docs/integrations/GITHUB_ACTION_DEPLOY_AUTH.md
+
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install deploy-authorization action deps
+        run: npm ci --prefix .github/actions/deploy-authorization
+
+      - name: Build
+        run: |
+          npm ci
+          npm run build
+
+      - name: Authorize deploy with TrigGuard
+        id: trigguard
+        uses: ./.github/actions/deploy-authorization
+        with:
+          trigguard-url: ${{ vars.TRIGGUARD_URL }}
+          surface: deploy.release
+          service: my-service
+          version: ${{ github.sha }}
+          envelope: ${{ secrets.TRIGGUARD_ENVELOPE }}
+
+      - name: Deploy
+        run: |
+          echo "TrigGuard PERMIT — execution ID: ${{ steps.trigguard.outputs.execution-id }}"
+          # Your deploy command, e.g.:
+          # ./scripts/deploy.sh
+          # kubectl set image deployment/my-app app=${{ github.sha }}
