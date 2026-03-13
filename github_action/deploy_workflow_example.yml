@@ -37,6 +37,7 @@ jobs:
           service: my-service
           version: ${{ github.sha }}
           envelope: ${{ secrets.TRIGGUARD_ENVELOPE }}
+        # Required: vars.TRIGGUARD_URL, secrets.TRIGGUARD_ENVELOPE (JSON envelope with commit token)
 
       - name: Deploy
         run: |
