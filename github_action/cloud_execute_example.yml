@@ -1,6 +1,6 @@
 # TrigGuard Cloud Example — GitHub Action calls /execute and receives a receipt
-# For local testing: start TrigGuard Cloud skeleton (packages/trigguard-cloud: npm run dev), then run this workflow
-# (e.g. on a self-hosted runner that can reach localhost:3000, or use act). Production: set trigguard-url to https://api.trigguardai.com
+# Local: start TrigGuard Cloud (packages/trigguard-cloud: npm start), use trigguard-url: http://localhost:3000 (no auth-token).
+# Hosted: set trigguard-url to Cloud Run URL and auth-token from secret (org policy may block unauthenticated access).
 name: TrigGuard Cloud Example
 
 on:
@@ -21,7 +21,9 @@ jobs:
       - name: Authorize deployment with TrigGuard
         uses: ./.github/actions/deploy-authorization
         with:
-          trigguard-url: http://localhost:3000
+          # Local: http://localhost:3000 (omit auth-token). Hosted: use Cloud Run URL + auth-token.
+          trigguard-url: ${{ vars.TRIGGUARD_URL || 'http://localhost:3000' }}
+          auth-token: ${{ secrets.TRIGGUARD_CLOUD_TOKEN }}
           service: example-service
           version: ${{ github.sha }}
 
