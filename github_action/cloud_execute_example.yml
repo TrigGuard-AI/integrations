@@ -1,0 +1,29 @@
+# TrigGuard Cloud Example — GitHub Action calls /execute and receives a receipt
+# For local testing: start TrigGuard Cloud skeleton (packages/trigguard-cloud: npm run dev), then run this workflow
+# (e.g. on a self-hosted runner that can reach localhost:3000, or use act). Production: set trigguard-url to https://api.trigguardai.com
+name: TrigGuard Cloud Example
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install action dependencies
+        run: npm ci
+        working-directory: .github/actions/deploy-authorization
+
+      - name: Authorize deployment with TrigGuard
+        uses: ./.github/actions/deploy-authorization
+        with:
+          trigguard-url: http://localhost:3000
+          service: example-service
+          version: ${{ github.sha }}
+
+      - name: Deploy
+        run: echo "Deployment permitted — receipt generated"
