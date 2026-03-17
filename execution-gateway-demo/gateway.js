@@ -19,14 +19,21 @@ const GATEWAY_SECRET = process.env.GATEWAY_SECRET || '';
 function forwardToTarget(payload) {
   return new Promise((resolve, reject) => {
     const body = JSON.stringify(payload);
+    const path = '/internal/commit';
+    const method = 'POST';
+    const timestamp = Math.floor(Date.now() / 1000);
+    const nonce = crypto.randomBytes(16).toString('hex');
     const headers = {
       'Content-Type': 'application/json',
       'Content-Length': Buffer.byteLength(body),
     };
     if (GATEWAY_SECRET) {
-      headers['x-trigguard-gateway-signature'] = signGatewayRequest(body, GATEWAY_SECRET);
+      const sig = signGatewayRequest({ method, path, body, timestamp, nonce }, GATEWAY_SECRET);
+      headers['x-trigguard-gateway-signature'] = sig;
+      headers['x-trigguard-gateway-timestamp'] = String(timestamp);
+      headers['x-trigguard-gateway-nonce'] = nonce;
     }
-    const u = new URL(TARGET_URL + '/internal/commit');
+    const u = new URL(TARGET_URL + path);
     const req = http.request({
       hostname: u.hostname,
       port: u.port || 80,
