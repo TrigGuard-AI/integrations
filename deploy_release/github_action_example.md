@@ -23,7 +23,7 @@ Example GitHub Actions step showing how TrigGuard authorizes a deployment and re
 
 ## Expected response
 
-- **decision:** `PERMIT` | `DENY` | `SILENCE`
+- **decision:** `PERMIT` | `BLOCK` | `SILENCE`
 - **executionId:** unique execution identifier
 - **receipt:** signed execution receipt (ed25519)
 
