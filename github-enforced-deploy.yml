@@ -1,0 +1,45 @@
+# Example: infrastructure deploy with OER receipt gate (copy into .github/workflows/ and adapt).
+# Flow: plan → canonical action JSON → obtain OER receipt from TrigGuard issuer → verify → apply only if valid.
+#
+# Prerequisites:
+# - Secret TG_OER_RECEIPT: wire string from TrigGuard for this plan + surface
+# - Variable TG_OER_PUBLIC_KEY_HEX: 64 hex chars (32-byte Ed25519 public key from trust store)
+#
+# This file lives under examples/; GitHub only runs workflows from .github/workflows/.
+
+name: Enforced infra deploy (example)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Plan (example — replace with terraform plan -out etc.)
+        run: |
+          set -euo pipefail
+          # Structured action JSON for the irreversible change; must match bytes used when the receipt was issued.
+          cat > plan.action.json <<'JSON'
+          {"environment":"production","operation":"apply","target":"networking"}
+          JSON
+
+      - name: Request OER receipt (placeholder)
+        run: |
+          echo "In production: call TrigGuard issuer with canonical action + surface; store wire receipt in secret TG_OER_RECEIPT."
+          echo "This example expects TG_OER_RECEIPT and TG_OER_PUBLIC_KEY_HEX to be configured in the repo."
+
+      - name: Verify OER receipt (blocks apply if invalid)
+        uses: ./integrations/github-action-guard
+        with:
+          receipt: ${{ secrets.TG_OER_RECEIPT }}
+          surface: infra.apply
+          action_file: plan.action.json
+          public_key: ${{ vars.TG_OER_PUBLIC_KEY_HEX }}
+
+      - name: Terraform apply (runs only after verification)
+        run: |
+          echo "terraform apply (example — replace with real apply)"
+          echo "If the gate step failed, this step is not reached."

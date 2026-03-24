@@ -14,6 +14,7 @@ Runnable and copy-paste-friendly samples for integrating TrigGuard-style **execu
 | [`terraform-infra-gate/`](terraform-infra-gate/) | Infra change gate |
 | [`github-deploy-gate/`](github-deploy-gate/) | Deploy workflow shape |
 | [`github_action/`](github_action/) | Workflow snippets (YAML) |
+| [`github-enforced-deploy.yml`](github-enforced-deploy.yml) | OER receipt gate before apply (composite action) |
 | [`deploy_release/`](deploy_release/) | Release / GitHub Action notes |
 | [`swift-demo/`](swift-demo/) | Swift payment demo |
 
