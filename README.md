@@ -15,6 +15,7 @@ Runnable and copy-paste-friendly samples for integrating TrigGuard-style **execu
 | [`terraform-guard-example.md`](terraform-guard-example.md) | OER-gated `terraform apply` (plan JSON + wrapper) |
 | [`github-deploy-gate/`](github-deploy-gate/) | Deploy workflow shape |
 | [`github_action/`](github_action/) | Workflow snippets (YAML) |
+| [`api-guard-example.md`](api-guard-example.md) | HTTP mutation routes gated by OER middleware |
 | [`github-enforced-deploy.yml`](github-enforced-deploy.yml) | OER receipt gate before apply (composite action) |
 | [`deploy_release/`](deploy_release/) | Release / GitHub Action notes |
 | [`swift-demo/`](swift-demo/) | Swift payment demo |
