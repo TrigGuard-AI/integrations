@@ -96,6 +96,9 @@ func resolveActionFile(p string) string {
 	if ws := os.Getenv("GITHUB_WORKSPACE"); ws != "" {
 		return filepath.Join(ws, p)
 	}
+	if cd := os.Getenv("TG_CALLER_DIR"); cd != "" {
+		return filepath.Join(cd, p)
+	}
 	return filepath.Clean(p)
 }
 
