@@ -12,6 +12,7 @@ Runnable and copy-paste-friendly samples for integrating TrigGuard-style **execu
 | [`demo-trading/`](demo-trading/) | Trading-style requests |
 | [`data-export-gate/`](data-export-gate/) | Data export authorization |
 | [`terraform-infra-gate/`](terraform-infra-gate/) | Infra change gate |
+| [`terraform-guard-example.md`](terraform-guard-example.md) | OER-gated `terraform apply` (plan JSON + wrapper) |
 | [`github-deploy-gate/`](github-deploy-gate/) | Deploy workflow shape |
 | [`github_action/`](github_action/) | Workflow snippets (YAML) |
 | [`github-enforced-deploy.yml`](github-enforced-deploy.yml) | OER receipt gate before apply (composite action) |
