@@ -1,0 +1,32 @@
+name: 'TrigGuard OER gate'
+description: 'Verify OER v1 execution receipt before irreversible CI steps (offline Ed25519 verification).'
+inputs:
+  receipt:
+    description: 'OER wire string: base64url(payload).base64url(signature)'
+    required: true
+  surface:
+    description: 'Execution surface id (must match payload sid)'
+    required: true
+  action_file:
+    description: 'Path to UTF-8 JSON bytes of the action (same bytes used to compute ahsh at issuance)'
+    required: true
+  public_key:
+    description: 'Ed25519 public key as 64 hex characters (32 bytes)'
+    required: true
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-go@v5
+      with:
+        go-version: '1.21'
+    - name: Verify OER receipt
+      shell: bash
+      env:
+        TG_EXECUTION_RECEIPT: ${{ inputs.receipt }}
+        TG_SURFACE: ${{ inputs.surface }}
+        TG_ACTION_FILE: ${{ inputs.action_file }}
+        TG_PUBLIC_KEY_HEX: ${{ inputs.public_key }}
+      run: |
+        set -euo pipefail
+        cd "${{ github.action_path }}"
+        go run .
