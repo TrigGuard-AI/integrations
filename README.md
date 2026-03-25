@@ -20,4 +20,16 @@ Runnable and copy-paste-friendly samples for integrating TrigGuard-style **execu
 | [`deploy_release/`](deploy_release/) | Release / GitHub Action notes |
 | [`swift-demo/`](swift-demo/) | Swift payment demo |
 
+## Example Status Matrix
+
+| Example | Status | Trust level | Uses real verifier? | Production intent |
+|---------|--------|-------------|---------------------|-------------------|
+| `reference-verifier/` | production reference | medium | yes | integration reference |
+| `execution-gateway-demo/` | illustrative | low | no | demo-only |
+| `payment-gate/` | illustrative | low | no | demo-only |
+| `terraform-infra-gate/` | illustrative | low | yes | reference pattern |
+| `github-deploy-gate/` | illustrative | low | yes | reference pattern |
+| `data-export-gate/` | illustrative | low | no | demo-only |
+| `swift-demo/` | experimental | low | no | demo-only |
+
 Add new examples under this directory with a **README.md** that states assumptions, how to run, and what is out of scope.
