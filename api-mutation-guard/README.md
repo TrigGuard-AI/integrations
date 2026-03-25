@@ -12,6 +12,11 @@ On failure: **HTTP 403** with body **`OER authorization failed — mutation bloc
 
 Uses [`tools/oer-verifier-go`](../../tools/oer-verifier-go) — no network I/O in the verifier.
 
+## Replay Protection
+
+The middleware keeps a short-lived in-memory cache of receipt fingerprints and blocks reuse of the same receipt within a 60-second window.
+This mitigates basic capture-and-repeat request replay attacks at the execution surface without changing the OER protocol or verifier contract.
+
 ## Example server
 
 ```bash

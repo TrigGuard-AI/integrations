@@ -5,11 +5,13 @@ package apimutationguard
 import (
 	"bytes"
 	"crypto/ed25519"
+	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
 	"io"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	oer "github.com/TrigGuard-AI/TrigGuard/tools/oer-verifier-go"
@@ -19,6 +21,13 @@ import (
 const MaxBodyBytes = 1 << 20
 
 const blockedMsg = "OER authorization failed — mutation blocked"
+
+var receiptReplayCache = struct {
+	sync.Mutex
+	used map[string]int64
+}{
+	used: make(map[string]int64),
+}
 
 // Middleware wraps next and requires a valid OER for the raw request body bytes (action JSON) and headers:
 //   TG-Execution-Receipt — wire receipt
@@ -34,6 +43,8 @@ func Middleware(next http.Handler) http.Handler {
 			http.Error(w, blockedMsg, http.StatusForbidden)
 			return
 		}
+		h := sha256.Sum256([]byte(receipt))
+		receiptID := hex.EncodeToString(h[:])
 
 		pub, err := parsePublicKeyHex(pubHex)
 		if err != nil {
@@ -48,6 +59,17 @@ func Middleware(next http.Handler) http.Handler {
 			return
 		}
 		r.Body = io.NopCloser(bytes.NewReader(body))
+
+		receiptReplayCache.Lock()
+		if ts, ok := receiptReplayCache.used[receiptID]; ok {
+			if time.Now().Unix()-ts < 60 {
+				receiptReplayCache.Unlock()
+				http.Error(w, "OER replay detected — mutation blocked", http.StatusForbidden)
+				return
+			}
+		}
+		receiptReplayCache.used[receiptID] = time.Now().Unix()
+		receiptReplayCache.Unlock()
 
 		if err := oer.Verify(receipt, body, surface, pub, time.Now().Unix()); err != nil {
 			http.Error(w, blockedMsg, http.StatusForbidden)
