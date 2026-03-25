@@ -5,7 +5,9 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"strings"
@@ -41,15 +43,25 @@ func handleVerify(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dec := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<20))
-	var req verifyRequest
-	if err := dec.Decode(&req); err != nil {
-		writeJSON(w, http.StatusForbidden, verifyResponse{OK: false, Error: "bad request"})
-		return
+	req := verifyRequest{
+		Receipt:   strings.TrimSpace(r.Header.Get("TG-Execution-Receipt")),
+		Surface:   strings.TrimSpace(r.Header.Get("TG-Surface")),
+		Action:    strings.TrimSpace(r.Header.Get("TG-Action")),
+		PublicKey: strings.TrimSpace(r.Header.Get("TG-Public-Key")),
 	}
+
+	// Fallback to JSON body for direct service callers.
 	if req.Receipt == "" || req.Surface == "" || req.Action == "" || req.PublicKey == "" {
-		writeJSON(w, http.StatusForbidden, verifyResponse{OK: false, Error: "missing fields"})
-		return
+		dec := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<20))
+		dec.DisallowUnknownFields()
+		if err := dec.Decode(&req); err != nil && !errors.Is(err, io.EOF) {
+			writeJSON(w, http.StatusForbidden, verifyResponse{OK: false, Error: "bad request"})
+			return
+		}
+		if req.Receipt == "" || req.Surface == "" || req.Action == "" || req.PublicKey == "" {
+			writeJSON(w, http.StatusForbidden, verifyResponse{OK: false, Error: "missing fields"})
+			return
+		}
 	}
 
 	actionBytes, err := decodeAction(req.Action)
@@ -73,13 +85,12 @@ func handleVerify(w http.ResponseWriter, r *http.Request) {
 }
 
 func decodeAction(s string) ([]byte, error) {
-	// For proxy-friendly transport we accept either:
-	// - base64 std encoding of the UTF-8 JSON bytes, or
-	// - raw JSON string bytes (as-is)
-	if b, err := base64.StdEncoding.DecodeString(s); err == nil {
-		return b, nil
+	// TG-Action is expected to be base64-encoded UTF-8 JSON bytes.
+	b, err := base64.StdEncoding.DecodeString(s)
+	if err != nil {
+		return nil, fmt.Errorf("action must be base64: %w", err)
 	}
-	return []byte(s), nil
+	return b, nil
 }
 
 func parsePublicKeyHex(s string) (ed25519.PublicKey, error) {

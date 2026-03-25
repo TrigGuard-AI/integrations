@@ -1,8 +1,8 @@
 FROM golang:1.21-alpine AS build
 WORKDIR /src
-COPY go.mod ./
+COPY . /src
+WORKDIR /src/integrations/nginx-execution-gate/verifier-service
 RUN go mod download
-COPY . .
 RUN CGO_ENABLED=0 go build -o /out/verifier-service .
 
 FROM alpine:3.20

@@ -11,7 +11,8 @@ services:
 
   verifier-service:
     build:
-      context: ./verifier-service
+      context: ../../
+      dockerfile: integrations/nginx-execution-gate/verifier-service/Dockerfile
     expose:
       - "8081"
 
