@@ -1,4 +1,4 @@
-# integrations
+# TrigGuard Integrations
 
 Official and community integrations (CI, gateways, infra) that connect external systems to TrigGuard execution governance.
 
