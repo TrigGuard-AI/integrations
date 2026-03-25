@@ -4,6 +4,8 @@ Runnable and copy-paste-friendly samples for integrating TrigGuard-style **execu
 
 | Example | What it shows |
 |---------|----------------|
+| [`agent_tool_guard_demo.py`](agent_tool_guard_demo.py) | **~100 lines:** agent → Swift `POST /decide` → PERMIT/DENY → simulated execution |
+| [`agent_demo.py`](agent_demo.py) | **~100 lines:** agent → **`remote-eval`** `POST /v1/evaluate` → decision → simulated execution (Node + Swift) |
 | [`basic-ai-gate/`](basic-ai-gate/) | Normalizing agent intent into an execution envelope |
 | [`execution-gateway-demo/`](execution-gateway-demo/) | Gateway + protected execution path (Node) |
 | [`payment-gate/`](payment-gate/) | Payment authorization flow |
@@ -24,6 +26,8 @@ Runnable and copy-paste-friendly samples for integrating TrigGuard-style **execu
 
 | Example | Status | Trust level | Uses real verifier? | Production intent |
 |---------|--------|-------------|---------------------|-------------------|
+| `agent_tool_guard_demo.py` | illustrative | low | no (uses canonical /decide) | demo-only |
+| `agent_demo.py` | illustrative | low | no (uses remote-eval /v1/evaluate) | demo-only |
 | `reference-verifier/` | production reference | medium | yes | integration reference |
 | `execution-gateway-demo/` | illustrative | low | no | demo-only |
 | `payment-gate/` | illustrative | low | no | demo-only |
