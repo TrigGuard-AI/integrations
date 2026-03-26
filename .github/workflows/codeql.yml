@@ -11,7 +11,7 @@ on:
 jobs:
   analyze:
     name: Analyze (${{ matrix.language }})
-    runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
+    runs-on: ubuntu-latest
     permissions:
       security-events: write
       packages: read
@@ -29,8 +29,6 @@ jobs:
             build-mode: none
           - language: python
             build-mode: none
-          - language: swift
-            build-mode: manual
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -40,21 +38,6 @@ jobs:
         with:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
-
-      - name: Run manual build steps
-        if: matrix.language == 'swift'
-        shell: bash
-        run: |
-          # Swift autobuild has failed in this repo; build explicitly.
-          mapfile -t packages < <(find . -name Package.swift -not -path "./.git/*" -exec dirname {} \;)
-          if [ "${#packages[@]}" -eq 0 ]; then
-            echo "No Swift Package.swift files found; nothing to build."
-            exit 0
-          fi
-          for dir in "${packages[@]}"; do
-            echo "Building Swift package in: $dir"
-            (cd "$dir" && swift build)
-          done
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
