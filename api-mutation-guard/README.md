@@ -1,0 +1,27 @@
+# API mutation guard (OER v1)
+
+HTTP **`Middleware`** that blocks handlers unless **`oer.Verify`** succeeds for:
+
+- **`TG-Execution-Receipt`** — OER wire string  
+- **`TG-Surface`** — must match payload `sid` (e.g. `payment.execute`)  
+- **`TG-Public-Key`** — Ed25519 public key, **64 hex characters** (32 bytes)  
+
+The **raw request body** is the action JSON whose hash must match receipt **`ahsh`** (same bytes the issuer hashed).
+
+On failure: **HTTP 403** with body **`OER authorization failed — mutation blocked`**.
+
+Uses [`tools/oer-verifier-go`](../../tools/oer-verifier-go) — no network I/O in the verifier.
+
+## Replay Protection
+
+The middleware keeps a short-lived in-memory cache of receipt fingerprints and blocks reuse of the same receipt within a 60-second window.
+This mitigates basic capture-and-repeat request replay attacks at the execution surface without changing the OER protocol or verifier contract.
+
+## Example server
+
+```bash
+cd integrations/api-mutation-guard
+go run ./cmd/example-server
+```
+
+See [`examples/api-guard-example.md`](../../examples/api-guard-example.md) and [`docs/integrations/api_mutation_guard.md`](../../docs/integrations/api_mutation_guard.md).
