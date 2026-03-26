@@ -19,3 +19,7 @@ Integrations must respect: **Execution Surface**, **Protocol Contract**, **Proto
 5. **cloud** — hosted enforcement layer  
 6. **site** — public discovery (trigguardai.com)  
 7. **TrigGuard** — combined monorepo (demos, services, tooling, release verification); see also ecosystem integration registry in that repo.
+
+## Examples
+
+This repository also includes runnable examples at repository root (for example: `basic-ai-gate`, `execution-gateway-demo`, `payment-gate`, `terraform-infra-gate`, and `reference-verifier`).

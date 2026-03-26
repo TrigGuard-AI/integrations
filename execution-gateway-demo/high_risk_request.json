@@ -1,0 +1,14 @@
+{
+  "tenantId": "demo-company",
+  "surface": "spendCommit",
+  "signals": {
+    "riskScore": 0.92,
+    "dopamineDeficit": true,
+    "rsdSpike": true
+  },
+  "context": {
+    "amount": 9000000,
+    "origin": "automation",
+    "destination": "UnknownExchange"
+  }
+}

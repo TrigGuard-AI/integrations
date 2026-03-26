@@ -1,0 +1,31 @@
+# Minimal TrigGuard deploy authorization — copy into .github/workflows/deploy.yml
+# Requires: vars.TRIGGUARD_URL, secrets.TRIGGUARD_ENVELOPE
+# See: docs/getting-started/CI_DEPLOY_PROTECTION_QUICKSTART.md
+
+name: Deploy (TrigGuard protected)
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install action deps
+        run: npm ci --prefix .github/actions/deploy-authorization
+
+      - name: TrigGuard deploy authorization
+        id: tg
+        uses: ./.github/actions/deploy-authorization
+        with:
+          trigguard-url: ${{ vars.TRIGGUARD_URL }}
+          surface: deploy.release
+          service: ${{ github.repository }}
+          version: ${{ github.sha }}
+          envelope: ${{ secrets.TRIGGUARD_ENVELOPE }}
+
+      - name: Deploy
+        run: echo "Deploying — execution ID ${{ steps.tg.outputs.execution-id }}"

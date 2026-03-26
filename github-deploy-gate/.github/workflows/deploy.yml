@@ -1,0 +1,47 @@
+# TrigGuard deploy gate example — build → authorize → deploy
+# Set TRIGGUARD_URL and TRIGGUARD_CLOUD_TOKEN in repo settings.
+name: Deploy with TrigGuard gate
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: echo "Build step (replace with your build)"
+
+      - name: TrigGuard authorization
+        id: trigguard
+        env:
+          TRIGGUARD_URL: ${{ vars.TRIGGUARD_URL }}
+          TOKEN: ${{ secrets.TRIGGUARD_CLOUD_TOKEN }}
+        run: |
+          set -e
+          RESP=$(curl -s -w "\n%{http_code}" -X POST "$TRIGGUARD_URL/execute" \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"surface\":\"deploy.release\",\"actorId\":\"github-actions\",\"subjectDigest\":\"${{ github.sha }}\"}")
+          HTTP_CODE=$(echo "$RESP" | tail -n1)
+          BODY=$(echo "$RESP" | sed '$d')
+          echo "response=$BODY" >> $GITHUB_OUTPUT
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "TrigGuard returned HTTP $HTTP_CODE: $BODY"
+            exit 1
+          fi
+          DECISION=$(echo "$BODY" | jq -r '.decision')
+          if [ "$DECISION" != "PERMIT" ]; then
+            echo "TrigGuard decision: $DECISION (expected PERMIT)"
+            exit 1
+          fi
+          echo "TrigGuard PERMIT — receipt in response"
+          echo "$BODY" | jq -c '.receipt' > receipt.json
+          echo "Receipt saved for audit"
+
+      - name: Deploy
+        run: echo "Deploy step (replace with your deploy); only runs after TrigGuard PERMIT"

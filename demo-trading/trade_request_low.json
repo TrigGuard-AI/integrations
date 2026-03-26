@@ -1,0 +1,14 @@
+{
+  "tenantId": "demo-company",
+  "surface": "spendCommit",
+  "signals": {
+    "riskScore": 0.05,
+    "dopamineDeficit": false,
+    "rsdSpike": false
+  },
+  "context": {
+    "amount": 500,
+    "origin": "automation",
+    "destination": "KnownExchange"
+  }
+}
