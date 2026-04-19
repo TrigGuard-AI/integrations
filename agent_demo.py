@@ -88,28 +88,32 @@ def main() -> None:
     print("TrigGuard agent demo (remote-eval POST /v1/evaluate)")
     print(f"Endpoint: {EVAL_URL}")
 
-    # Blocked path: matches remote-eval README "HIGH_RISK_SPEND" example.
-    deny_spend = {
+    # Canonical surface: `data.export` is the only execution surface advertised
+    # in the public capabilities manifest after Phase C (trigguard-authority
+    # SURFACE_RUNTIME_MIGRATION_PLAN.md §13, executed 2026-04-19).
+
+    # Blocked path: high-risk request that the stub policy is expected to DENY.
+    deny_high_risk = {
         "tenantId": "demo-tenant",
-        "surface": "spendCommit",
+        "surface": "data.export",
         "signals": {"riskScore": 0.8, "dopamineDeficit": False, "rsdSpike": False},
         "context": {"amount": 5000, "origin": "human"},
     }
     run_scenario(
-        "Agent requests large spend (policy yields DENY in this stub)",
-        deny_spend,
+        "Agent requests high-risk data.export (policy yields DENY in this stub)",
+        deny_high_risk,
     )
 
-    # Allowed-style path: explicit surface from README (PERMIT).
-    permit_time = {
+    # Allowed path: low-risk request that the stub policy is expected to PERMIT.
+    permit_low_risk = {
         "tenantId": "demo-tenant",
-        "surface": "timeCommit",
+        "surface": "data.export",
         "signals": {"riskScore": 0.3, "dopamineDeficit": False, "rsdSpike": False},
         "context": {"amount": 0, "origin": "human"},
     }
     run_scenario(
-        "Agent requests timeCommit (low-risk path — expect PERMIT per stub rules)",
-        permit_time,
+        "Agent requests low-risk data.export (expect PERMIT per stub rules)",
+        permit_low_risk,
     )
 
     print("\nDone.")

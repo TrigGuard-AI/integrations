@@ -94,7 +94,7 @@ const server = http.createServer(async (req, res) => {
     const { claims } = await protectedExecute({
       payload,
       commitToken,
-      expectedSurface: 'spendCommit',
+      expectedSurface: 'data.export',
       expectedTenantId: payload.tenantId,
       secret: COMMIT_TOKEN_SECRET,
     });

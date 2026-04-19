@@ -49,5 +49,5 @@ if [ -z "${COMMIT_TOKEN_SECRET}" ]; then
 fi
 echo "Commit token verified"
 cd "$REPO_ROOT"
-node scripts/demo_execute_with_token.js --token "$TOKEN" --file "$LOW" --tenant demo-company --surface spendCommit
+node scripts/demo_execute_with_token.js --token "$TOKEN" --file "$LOW" --tenant demo-company --surface data.export
 echo "Execution receipt generated"

@@ -1,6 +1,6 @@
 {
   "tenantId": "demo-company",
-  "surface": "spendCommit",
+  "surface": "data.export",
   "signals": {
     "riskScore": 0.05,
     "dopamineDeficit": false,
