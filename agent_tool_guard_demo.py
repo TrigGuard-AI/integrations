@@ -33,9 +33,12 @@ import urllib.request
 DEFAULT_DECIDE = os.environ.get("TG_CANONICAL_CORE_URL", "http://127.0.0.1:9090/decide")
 
 # Align with remote-eval-stub/schemas.js (surface + signals + context shape for canonical invoke).
-def spend_commit_frame(amount: float) -> dict[str, object]:
+# Uses the canonical `data.export` execution surface - the only execution surface
+# advertised in the public capabilities manifest after Phase C
+# (trigguard-authority `SURFACE_RUNTIME_MIGRATION_PLAN.md` §13, executed 2026-04-19).
+def data_export_frame(amount: float) -> dict[str, object]:
     return {
-        "surface": "spendCommit",
+        "surface": "data.export",
         "signals": {
             "riskScore": min(1.0, amount / 1000.0),
             "dopamineDeficit": False,
@@ -71,7 +74,7 @@ def post_decide(url: str, body: dict[str, object]) -> tuple[int, dict | None]:
 
 def run_tool(name: str, amount: float) -> None:
     print(f"\n--- Agent requests tool: {name!r} (amount={amount}) ---")
-    frame = spend_commit_frame(amount)
+    frame = data_export_frame(amount)
     try:
         status, resp = post_decide(DEFAULT_DECIDE, frame)
     except ConnectionError as e:
@@ -93,7 +96,7 @@ def run_tool(name: str, amount: float) -> None:
 def main() -> None:
     print("TrigGuard agent tool guard demo (canonical POST /decide)")
     print(f"Endpoint: {DEFAULT_DECIDE}")
-    print("Scenario: two spendCommit attempts — policy may differ by amount.")
+    print("Scenario: two data.export attempts - policy may differ by amount.")
     run_tool("send_money", 500.0)
     run_tool("send_money", 50.0)
     print("\nDone.")
